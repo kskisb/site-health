@@ -13,9 +13,7 @@
 # Node
 node_modules/
 
-# Rails
-backend/log/
-backend/tmp/
+# Railsのログ・一時ファイル・master.key は backend/.gitignore で無視する
 
 # OS
 .DS_Store
