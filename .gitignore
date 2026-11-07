@@ -1,0 +1,21 @@
+# 秘密の値（APIキーなどはRenderの環境変数とGitHubのSecretsに置く）
+.env
+.env.*
+!.env.example
+
+# Terraform（状態ファイルはHCP Terraformに置く）
+*.tfvars
+*.tfvars.json
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Node
+node_modules/
+
+# Rails
+backend/log/
+backend/tmp/
+
+# OS
+.DS_Store
