@@ -1,0 +1,21 @@
+# 手元のDockerで動かすのはPostgresだけ。RailsとNuxtは手元で直接動かす
+services:
+  db:
+    # Renderで作るPostgresと同じメジャーバージョンにする
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      # 手元のPCからだけつなげるようにする
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18からは /var/lib/postgresql/data ではなく /var/lib/postgresql に置く
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres-data:

@@ -17,4 +17,13 @@ Web制作会社やフリーランスが、保守しているクライアント�
 
 ## 手元での動かし方
 
-準備中です。
+先に [mise](https://mise.jdx.dev/) と Docker Desktop を入れ、シェルで `mise activate` を有効にしておきます。RubyとNodeのバージョンは `.mise.toml` で決めてあり、Dockerで動かすのはPostgresだけです。
+
+```bash
+mise install                  # .mise.toml のRubyとNodeを入れる
+docker compose up -d --wait   # Postgresを起動する
+```
+
+つながるかは `docker compose exec db psql -U postgres -c 'select version();'` で確かめられます。パスワードやポートを変えたいときは、`cp .env.example .env` で `.env` を作って値を入れます。
+
+止めるときは `docker compose down` です。データはボリュームに残り、`docker compose down -v` で消えます。
