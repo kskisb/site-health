@@ -1,0 +1,28 @@
+# 手元とテストは、Docker Compose の Postgres（リポジトリ直下の compose.yaml）につなぐ。
+# 本番は DATABASE_URL だけを読む。Solid Queue と Solid Cache のテーブルも同じDBに置く。
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  # For details on connection pooling, see Rails configuration guide
+  # https://guides.rubyonrails.org/configuring.html#database-pooling
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development: &development
+  <<: *default
+  database: site_health_development
+  # compose.yaml と同じ既定値。.env で変えたときは、同じ名前の環境変数を渡す
+  host: localhost
+  port: <%= ENV["POSTGRES_PORT"].presence || 5432 %>
+  username: postgres
+  password: <%= ENV["POSTGRES_PASSWORD"].presence || "postgres" %>
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *development
+  database: site_health_test
+
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

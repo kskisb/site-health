@@ -1,0 +1,20 @@
+# rails new --skip-git では作られないので、Railsが普段作るものと同じ中身を置く
+/.bundle
+/.env*
+
+# ログと一時ファイル（フォルダは .keep で残す）
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/
+!/tmp/pids/.keep
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
+
+# 認証情報を解く鍵。絶対にコミットしない
+/config/master.key

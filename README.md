@@ -27,3 +27,14 @@ docker compose up -d --wait   # Postgresを起動する
 つながるかは `docker compose exec db psql -U postgres -c 'select version();'` で確かめられます。パスワードやポートを変えたいときは、`cp .env.example .env` で `.env` を作って値を入れます。
 
 止めるときは `docker compose down` です。データはボリュームに残り、`docker compose down -v` で消えます。
+
+### backend（Rails API）
+
+```bash
+cd backend
+bundle install
+bin/rails db:prepare   # DBを作り、マイグレーションを流す
+bin/rails s            # http://localhost:3001 で起動する
+```
+
+テストとチェックは `bundle exec rspec`、`bin/rubocop`、`bin/brakeman` で動かします。`.env` でPostgresのパスワードやポートを変えたときは、Railsにも同じ環境変数を渡します（例：`set -a; source ../.env; set +a`）。
