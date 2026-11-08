@@ -38,3 +38,13 @@ bin/rails s            # http://localhost:3001 で起動する
 ```
 
 テストとチェックは `bundle exec rspec`、`bin/rubocop`、`bin/brakeman` で動かします。`.env` でPostgresのパスワードやポートを変えたときは、Railsにも同じ環境変数を渡します（例：`set -a; source ../.env; set +a`）。
+
+### frontend（Nuxt）
+
+```bash
+cd frontend
+npm install
+npm run dev            # http://localhost:3000 で起動する
+```
+
+テストとチェックは `npm run lint`、`npm run test`、`npm run typecheck` で動かします。`npm run generate` で、Cloudflare Pagesに置くファイルが `.output/public/` にできます。画面はSPAなので、APIのURL（手元は `http://localhost:3001`）はビルドのときに埋め込まれます。変えるときは、ビルドのときに `NUXT_PUBLIC_API_BASE` を渡します。
