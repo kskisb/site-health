@@ -1,0 +1,31 @@
+# 使っている gem・npm パッケージ・Actions の新しい版が出たら、週1回まとめて更新のプルリクエストを出す
+version: 2
+updates:
+  - package-ecosystem: bundler
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      # マイナーとパッチの更新は1つのプルリクエストにまとめる
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint が TypeScript 7 に対応するまでは 6.0 系にとどめる（SH-3）
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
