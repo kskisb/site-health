@@ -1,3 +1,4 @@
+# 練習のプルリクエスト（SH-4）：backendのコメントだけを変える。確かめたら閉じる
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
