@@ -1,0 +1,89 @@
+name: backend
+
+# どのプルリクエストでも必ず動かし、backend に関係ない変更ならジョブを if で飛ばす。
+# on.paths で動かなかったチェックは「待ち」のまま残り、必須にするとマージできなくなるため
+on:
+  pull_request:
+    branches: [main]
+  # Render の「CIが通ったらデプロイ」は main のコミットのチェックを見る（SH-10）
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # プルリクエストは新しいpushで古い実行を止める。main は最後まで動かす
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read # paths-filter がプルリクエストの変更ファイルを読むため
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'openapi/**'
+              - '.mise.toml'
+              - '.github/workflows/backend.yml'
+
+  backend:
+    needs: changes
+    # changes が失敗したときは、見逃さないようにテストを動かす（飛ばしたジョブは成功扱いになるため）
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.backend == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        # Render と手元（compose.yaml）に合わせる
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      RAILS_ENV: test
+      # gem は backend/ の外に入れる（RuboCop や Brakeman が読まないように）
+      BUNDLE_PATH: ${{ github.workspace }}/vendor/bundle
+      BUNDLE_FROZEN: "true"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+        with:
+          install_args: ruby
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vendor/bundle
+          key: bundle-${{ runner.os }}-${{ hashFiles('.mise.toml', 'backend/Gemfile.lock') }}
+      - run: bundle install --jobs 4
+      - run: bin/rails db:test:prepare
+      # どれかが落ちても、残りのチェックも動かして結果をまとめて見る
+      - run: bundle exec rspec
+        if: ${{ !cancelled() }}
+      - run: bin/rubocop -f github
+        if: ${{ !cancelled() }}
+      - run: bin/brakeman --no-pager
+        if: ${{ !cancelled() }}
