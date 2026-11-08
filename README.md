@@ -39,6 +39,8 @@ bin/rails s            # http://localhost:3001 で起動する
 
 テストとチェックは `bundle exec rspec`、`bin/rubocop`、`bin/brakeman` で動かします。`.env` でPostgresのパスワードやポートを変えたときは、Railsにも同じ環境変数を渡します（例：`set -a; source ../.env; set +a`）。
 
+点検は、内側のアドレス（localhost やプライベートIP）へは取りに行きません。手元で立てたサーバーを点検したいときは、`OUTBOUND_ALLOWED_HOSTS=localhost bin/rails s` のように、許可するホストをカンマ区切りで渡します。この許可リストは手元とテストでだけ効き、本番では読みません。
+
 ### frontend（Nuxt）
 
 ```bash
